@@ -36,6 +36,7 @@ HTML = r'''<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 html,body{font-size:18px;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -260,9 +261,52 @@ b,strong{font-weight:700;}
   font-size:clamp(1rem,1.45vw,1.22rem);line-height:1.7;}
 .cta b{color:var(--accent);}
 
+/* ---- 暖身投票 ---- */
+.poll-q{font-size:clamp(1.1rem,1.9vw,1.5rem);font-weight:700;margin-bottom:18px;text-align:center;}
+.poll-list{display:flex;flex-direction:column;gap:12px;max-width:680px;margin:8px auto 0;}
+.poll-opt{border:1px solid var(--line);border-radius:14px;padding:14px 18px;background:rgba(255,255,255,.03);cursor:pointer;transition:.15s;}
+.poll-opt:hover{border-color:var(--accent);}
+.poll-opt.active{border-color:var(--accent2);background:rgba(255,0,110,.12);}
+.poll-row{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:clamp(1rem,1.5vw,1.2rem);font-weight:700;}
+.poll-pct{font-family:"JetBrains Mono",monospace;color:var(--accent);font-size:.92rem;display:none;font-weight:500;}
+.poll-bar-wrap{display:none;margin-top:9px;height:9px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;}
+.poll-bar-fill{height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;}
+.poll-foot{text-align:center;margin-top:14px;font-size:.85rem;color:var(--ink3);font-family:"JetBrains Mono",monospace;}
+/* ---- 課文精讀 ---- */
+.read-wrap{display:grid;grid-template-columns:1.5fr 1fr;gap:28px;align-items:start;}
+.read-passage{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;padding:22px 26px;font-size:clamp(1.05rem,1.65vw,1.4rem);line-height:2;color:var(--ink);}
+.read-passage .hl{color:var(--accent);font-weight:700;} .read-passage .hl2{color:var(--warn);font-weight:700;}
+.gloss{display:flex;flex-direction:column;gap:9px;}
+.gloss-item{background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.22);border-radius:10px;padding:10px 15px;}
+.gloss-item b{color:var(--accent);font-size:clamp(1rem,1.35vw,1.16rem);} .gloss-item span{display:block;color:var(--ink2);font-size:clamp(.84rem,1.15vw,1rem);margin-top:2px;}
+.read-say{margin-top:6px;font-size:clamp(.9rem,1.25vw,1.06rem);color:var(--accent2);line-height:1.6;}
+/* ---- 生詞表 II ---- */
+.voca2{display:grid;grid-template-columns:1fr 1fr;gap:4px 30px;}
+.vrow{display:flex;gap:14px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);}
+.vw{color:var(--accent);font-weight:700;font-size:clamp(1.05rem,1.5vw,1.3rem);white-space:nowrap;}
+.vm{color:var(--ink2);font-size:clamp(.88rem,1.25vw,1.08rem);}
+/* ---- 文化 / 口說 ---- */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+.info-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;}
+.info-card h3{font-size:clamp(1.1rem,1.6vw,1.35rem);margin-bottom:12px;color:var(--accent);}
+.info-card ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.info-card li{font-size:clamp(.95rem,1.4vw,1.18rem);line-height:1.7;color:var(--ink2);padding-left:20px;position:relative;}
+.info-card li:before{content:"›";position:absolute;left:0;color:var(--accent2);font-weight:900;}
+.speak-frames{display:flex;flex-direction:column;gap:12px;}
+.frame{background:rgba(0,212,255,.07);border:1px dashed rgba(0,212,255,.4);border-radius:10px;padding:13px 18px;font-size:clamp(1rem,1.45vw,1.22rem);color:var(--ink);}
+.frame b{color:var(--accent);}
+/* ---- 休息 ---- */
+.break-box{text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.break-emoji{font-size:4.5rem;}
+.break-timer{font-family:"JetBrains Mono",monospace;font-size:clamp(3rem,8vw,6rem);font-weight:800;color:var(--accent);line-height:1;}
+.break-sub{font-size:clamp(1rem,1.55vw,1.32rem);color:var(--ink2);line-height:1.7;}
+/* ---- MG5 三選一 ---- */
+#mg5-body .opts{grid-template-columns:repeat(3,1fr);}
+#mg5-body .q{margin-bottom:7px;}
+
 @media (max-width:900px){
   .slide{padding:54px 24px;}
-  .split,.split8,.split10,.task,.bottom13{grid-template-columns:1fr;gap:20px;}
+  .split,.split8,.split10,.task,.bottom13,.read-wrap,.two-col,.voca2{grid-template-columns:1fr;gap:20px;}
   .map6,.steps4{grid-template-columns:1fr 1fr;}
   .opts{grid-template-columns:1fr;}
   .cover-inner{left:24px;right:24px;bottom:54px;}
@@ -292,6 +336,22 @@ b,strong{font-weight:700;}
       <div class="cover-qr-zh">📱 手機掃我，一起上課</div>
       <div class="cover-qr-vi">Quét mã QR để tham gia</div>
     </div>
+  </div>
+</section>
+
+<!-- 暖身投票 -->
+<section class="slide" data-section="引起動機">
+  <div class="slide-inner">
+    <div class="kicker">暖身 · 即時投票</div>
+    <h2 class="slide-title">你吃過鰻魚飯嗎？</h2>
+    <p class="sub" style="text-align:center">拿手機掃封面 QR、點一個答案，看看全班的結果！</p>
+    <div class="poll-list" id="poll">
+      <div class="poll-opt" onclick="vote(0)"><div class="poll-row"><span>😋 常常吃</span><span class="poll-pct"></span></div><div class="poll-bar-wrap"><div class="poll-bar-fill"></div></div></div>
+      <div class="poll-opt" onclick="vote(1)"><div class="poll-row"><span>🙂 吃過幾次</span><span class="poll-pct"></span></div><div class="poll-bar-wrap"><div class="poll-bar-fill"></div></div></div>
+      <div class="poll-opt" onclick="vote(2)"><div class="poll-row"><span>🤔 沒吃過</span><span class="poll-pct"></span></div><div class="poll-bar-wrap"><div class="poll-bar-fill"></div></div></div>
+      <div class="poll-opt" onclick="vote(3)"><div class="poll-row"><span>❓ 不知道那是什麼</span><span class="poll-pct"></span></div><div class="poll-bar-wrap"><div class="poll-bar-fill"></div></div></div>
+    </div>
+    <div class="poll-foot">已有 <span id="poll-total">0</span> 人投票</div>
   </div>
 </section>
 
@@ -330,6 +390,23 @@ b,strong{font-weight:700;}
   </div>
 </section>
 
+<!-- 生詞表 II -->
+<section class="slide" data-section="維持注意">
+  <div class="slide-inner">
+    <div class="kicker accent">生詞 · 再加幾個</div>
+    <h2 class="slide-title">這些詞也要會</h2>
+    <p class="sub">配合等一下的課文，先認識這幾個比較難的詞。</p>
+    <div class="voca2">
+      <div class="vrow"><span class="vw">胚胎幹細胞</span><span class="vm">能長成各種組織的細胞</span></div>
+      <div class="vrow"><span class="vw">仰賴</span><span class="vm">依靠、依賴</span></div>
+      <div class="vrow"><span class="vw">供不應求</span><span class="vm">東西太少，不夠賣</span></div>
+      <div class="vrow"><span class="vw">節節下降</span><span class="vm">數量一直不斷地減少</span></div>
+      <div class="vrow"><span class="vw">過度捕撈</span><span class="vm">抓太多，超過自然能恢復的量</span></div>
+      <div class="vrow"><span class="vw">標榜</span><span class="vm">公開宣傳自己有某個優點</span></div>
+    </div>
+  </div>
+</section>
+
 <!-- 4 MG1 生詞 -->
 <section class="slide" data-slide="4" data-section="維持注意">
   <div class="slide-inner">
@@ -342,6 +419,19 @@ b,strong{font-weight:700;}
         <div class="mg1-col" id="mg1-means"></div>
       </div>
       <div class="mg-bar"><span id="mg1-score">完成 0 / 5</span><button class="mg-reset" onclick="initMG1()">重來</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- MG5 生詞克漏字 -->
+<section class="slide" data-section="維持注意">
+  <div class="slide-inner">
+    <div class="kicker accent">生詞練習 · 形成性評量 ⑤</div>
+    <h2 class="slide-title">生詞填填看</h2>
+    <p class="sub">選出最適合的生詞，把句子填完整。</p>
+    <div class="mg" id="mg5">
+      <div id="mg5-body"></div>
+      <div class="mg-bar"><span id="mg5-score">完成 0 / 4</span><button class="mg-reset" onclick="initMG5()">重做</button></div>
     </div>
   </div>
 </section>
@@ -359,6 +449,23 @@ b,strong{font-weight:700;}
       <div class="map-step"><span class="mn">4</span><b>商業</b><p>價格與餐廳合作</p></div>
       <div class="map-step"><span class="mn">5</span><b>未來</b><p>各國人造海鮮</p></div>
       <div class="map-step"><span class="mn">6</span><b>挑戰</b><p>大家敢不敢吃</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 精讀1 危機 -->
+<section class="slide" data-section="維持注意">
+  <div class="slide-inner">
+    <div class="kicker accent">課文精讀 ① · 讀讀看</div>
+    <h2 class="slide-title">原文：鰻魚的危機</h2>
+    <div class="read-wrap">
+      <div class="read-passage">鰻魚的繁殖過程相當複雜，牠們在河川中生長，成熟後<span class="hl">洄游</span>到海洋中產卵，一生<b>只產一次卵</b>。長年以來，鰻魚養殖幾乎完全<span class="hl">仰賴</span>野生<span class="hl">捕撈</span>鰻苗，導致自然資源<span class="hl2">過度消耗</span>，野生鰻苗數量<span class="hl2">節節下降</span>。</div>
+      <div class="gloss">
+        <div class="gloss-item"><b>洄游</b><span>在河流和海洋之間來回游</span></div>
+        <div class="gloss-item"><b>仰賴</b><span>依靠、依賴</span></div>
+        <div class="gloss-item"><b>節節下降</b><span>一直不斷地減少</span></div>
+        <div class="read-say">🔊 跟老師唸一次，再用自己的話說：為什麼鰻魚越來越少？</div>
+      </div>
     </div>
   </div>
 </section>
@@ -382,6 +489,23 @@ b,strong{font-weight:700;}
   </div>
 </section>
 
+<!-- 精讀2 解方 -->
+<section class="slide" data-section="維持注意">
+  <div class="slide-inner">
+    <div class="kicker accent">課文精讀 ② · 讀讀看</div>
+    <h2 class="slide-title">原文：科技的解方</h2>
+    <div class="read-wrap">
+      <div class="read-passage">Forsea Foods 利用鰻魚受精卵的<span class="hl">胚胎幹細胞</span>製成<span class="hl">類器官</span>，這些類器官可<b>自行生成</b>培植肉，組織結構<b>就如同真正的魚肉</b>。就像其他培植肉，這種鰻魚肉<span class="hl2">不使用抗生素或激素</span>。</div>
+      <div class="gloss">
+        <div class="gloss-item"><b>胚胎幹細胞</b><span>能長成各種組織的細胞</span></div>
+        <div class="gloss-item"><b>類器官</b><span>實驗室培養、像真器官的組織</span></div>
+        <div class="gloss-item"><b>自行生成</b><span>自己長出來</span></div>
+        <div class="read-say">🔊 唸唸看，再回答：培植肉跟野生鰻魚有什麼不一樣？</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 7 解方 -->
 <section class="slide" data-slide="7" data-section="維持注意">
   <div class="slide-inner">
@@ -397,6 +521,23 @@ b,strong{font-weight:700;}
         <div class="firm">🏢 以色列新創公司 <b>Forsea Foods</b>（2021 年成立，已募資 520 萬美元）</div>
       </div>
       <div class="split-img"><img src="__LAB__" alt="培植海鮮實驗室"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 精讀3 未來 -->
+<section class="slide" data-section="維持注意">
+  <div class="slide-inner">
+    <div class="kicker accent">課文精讀 ③ · 讀讀看</div>
+    <h2 class="slide-title">原文：不只有鰻魚</h2>
+    <div class="read-wrap">
+      <div class="read-passage">美國的 Wildtype <span class="hl">標榜</span>能培植出「壽司級鮭魚」；以色列的 Steakholder Foods 正培植石斑魚肉；新加坡的 Shiok Meats 則<b>瞄準</b>蝦子、龍蝦和螃蟹。這或許是更<span class="hl">永續</span>的選擇，<b>但消費者是否接受，仍是一大<span class="hl2">考驗</span></b>。</div>
+      <div class="gloss">
+        <div class="gloss-item"><b>標榜</b><span>公開宣傳自己有某個優點</span></div>
+        <div class="gloss-item"><b>瞄準</b><span>把目標放在……</span></div>
+        <div class="gloss-item"><b>考驗</b><span>困難的測試、挑戰</span></div>
+        <div class="read-say">🔊 哪一種人造海鮮你最想試試？為什麼？</div>
+      </div>
     </div>
   </div>
 </section>
@@ -423,6 +564,18 @@ b,strong{font-weight:700;}
   </div>
 </section>
 
+<!-- 休息 -->
+<section class="slide" data-section="維持注意">
+  <div class="slide-inner center">
+    <div class="break-box">
+      <div class="break-emoji">☕</div>
+      <div class="kicker">休息一下 · Nghỉ giải lao</div>
+      <div class="break-timer" id="breakTimer">10:00</div>
+      <div class="break-sub">十分鐘後我們繼續：讀懂了嗎 → 你會吃嗎 → 寫作。<br>回來前先想一想：<b>你會不會吃人造鰻魚？</b></div>
+    </div>
+  </div>
+</section>
+
 <!-- 9 MG2 閱讀測驗 -->
 <section class="slide" data-slide="9" data-section="維持注意">
   <div class="slide-inner">
@@ -432,6 +585,49 @@ b,strong{font-weight:700;}
       <div id="mg2-body"></div>
       <div class="mg-bar"><span id="mg2-score">得分 0 / 4</span><button class="mg-reset" onclick="initMG2()">重做</button></div>
     </div>
+  </div>
+</section>
+
+<!-- 文化連結 -->
+<section class="slide" data-section="喚起行動">
+  <div class="slide-inner">
+    <div class="kicker accent2">文化連結</div>
+    <h2 class="slide-title">鰻魚飯與你</h2>
+    <div class="two-col">
+      <div class="info-card">
+        <h3>🍱 鰻魚飯的文化</h3>
+        <ul>
+          <li>在日本，夏天最熱的「土用丑日」要吃鰻魚補體力。</li>
+          <li>鰻魚飯是很多亞洲國家的高級料理，價格不便宜。</li>
+          <li>正因為大家都愛吃，野生鰻魚才被抓得越來越少。</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>🇻🇳 換你想一想</h3>
+        <ul>
+          <li>你或你的家人，吃過鰻魚嗎？什麼時候？</li>
+          <li>在越南，有沒有快要消失、越來越少的食物或動物？</li>
+          <li>如果牠快不見了，你希望用科技把牠「養出來」嗎？</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note" style="text-align:center;margin-top:14px">把你的答案記下來——等一下寫作可以用！</p>
+  </div>
+</section>
+
+<!-- 口說活動 -->
+<section class="slide" data-section="喚起行動">
+  <div class="slide-inner">
+    <div class="kicker accent2">口說活動 · 兩人一組</div>
+    <h2 class="slide-title">問問你的同學</h2>
+    <p class="sub">兩個人一組，輪流問和答。請用完整的句子回答。</p>
+    <div class="speak-frames">
+      <div class="frame">A：你會吃人造鰻魚嗎？<b>為什麼</b>？</div>
+      <div class="frame">B：我（會／不會）吃，<b>因為</b>……</div>
+      <div class="frame">A：你覺得人造肉<b>最大的好處</b>是什麼？</div>
+      <div class="frame">B：我覺得最大的好處是……，<b>例如</b>……</div>
+    </div>
+    <p class="note" style="text-align:center;margin-top:14px">說完換你寫：把剛剛說的，等一下寫進作文。</p>
   </div>
 </section>
 
@@ -533,6 +729,7 @@ function show(n){
   prog.style.width=((cur+1)/total*100)+'%';
   sectag.textContent='— '+slides[cur].dataset.section+' —';
   pinfo.innerHTML='<b>'+(cur+1)+'</b> / '+total;
+  if(slides[cur].querySelector('#breakTimer'))startBreak();
 }
 function next(){show(cur+1);} function prev(){show(cur-1);}
 document.addEventListener('keydown',e=>{
@@ -565,6 +762,46 @@ function recordGame(game_id,game_name,score,wrong,total,meta){
     body:JSON.stringify({course_code:'cultivated-eel',session_id:SESSION,student_id:STU_ID,student_name:STU_NAME,game_id:game_id,game_name:game_name,score:score,wrong:wrong,total:total,duration_ms:0,client_meta:meta||{}})
   }).then(function(r){var se=document.getElementById('supa');if(se&&r.ok)se.textContent='📡 已記錄 · '+SESSION;}).catch(function(e){console.warn('supa log failed',e);});}catch(e){}
 }
+/* ---- Supabase realtime client（給暖身投票用）---- */
+var sb=null,RT_OK=false;
+try{ if(typeof supabase!=='undefined'){ sb=supabase.createClient(SUPA_URL,SUPA_ANON); RT_OK=true; } }catch(e){}
+
+/* ---- 暖身即時投票（沿用 poll_counts 表 + poll_vote RPC）---- */
+var POLL_KEY=SESSION+'_eelwarmup';
+var myVote=localStorage.getItem('eel_vote_'+POLL_KEY); myVote=(myVote===null)?null:parseInt(myVote);
+var pv=[0,0,0,0];
+function renderPollBars(c){
+  var total=c.reduce(function(a,b){return a+b;},0);
+  var pt=document.getElementById('poll-total'); if(pt)pt.textContent=total;
+  document.querySelectorAll('#poll .poll-opt').forEach(function(o,j){
+    var wrap=o.querySelector('.poll-bar-wrap'),fill=o.querySelector('.poll-bar-fill'),pct=o.querySelector('.poll-pct');
+    if(total>0){wrap.style.display='block';pct.style.display='block';}
+    var p=total?Math.round(c[j]/total*100):0; fill.style.width=p+'%'; pct.textContent=p+'%（'+c[j]+'）';
+    o.classList.toggle('active',myVote===j);
+  });
+}
+function subscribePoll(){
+  if(!RT_OK)return;
+  sb.from('poll_counts').select('opt0,opt1,opt2,opt3').eq('session_key',POLL_KEY).maybeSingle().then(function(res){
+    var d=res&&res.data; if(d)renderPollBars([d.opt0||0,d.opt1||0,d.opt2||0,d.opt3||0]);
+  });
+  sb.channel('poll_'+POLL_KEY).on('postgres_changes',{event:'*',schema:'public',table:'poll_counts',filter:'session_key=eq.'+POLL_KEY},function(payload){var r=payload.new||{};renderPollBars([r.opt0||0,r.opt1||0,r.opt2||0,r.opt3||0]);}).subscribe();
+}
+function vote(i){
+  if(PRESENT)return; var prev=myVote; if(prev===i)return;
+  myVote=i; localStorage.setItem('eel_vote_'+POLL_KEY,i);
+  if(RT_OK){ sb.rpc('poll_vote',{p_session:POLL_KEY,p_old:(prev==null?-1:prev),p_new:i}).then(function(res){if(res&&res.error)console.warn('vote rpc',res.error);}); document.querySelectorAll('#poll .poll-opt').forEach(function(o,j){o.classList.toggle('active',j===i);}); }
+  else{ if(prev!=null&&pv[prev]>0)pv[prev]--; pv[i]++; renderPollBars(pv); }
+}
+
+/* ---- 休息倒數 10 分鐘 ---- */
+var breakStarted=false;
+function startBreak(){
+  if(breakStarted)return; var el=document.getElementById('breakTimer'); if(!el)return; breakStarted=true;
+  var t=600;
+  var iv=setInterval(function(){ t--; var m=Math.floor(t/60),s=t%60; el.textContent=m+':'+(s<10?'0':'')+s; if(t<=0){clearInterval(iv);el.textContent='時間到 🔔';} },1000);
+}
+
 (function(){var se=document.getElementById('supa');if(se)se.textContent=PRESENT?'':('📡 連線中 · '+SESSION);
   var join=location.origin+location.pathname+'?session='+encodeURIComponent(SESSION);
   var q=document.getElementById('coverQR');if(q)q.src='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data='+encodeURIComponent(join);
@@ -673,6 +910,30 @@ function initMG4(){
   document.getElementById('mg4-score').textContent='完成 0 / 3';
 }
 
+/* ---------------- MG5 生詞克漏字 ---------------- */
+var MG5=[
+  {q:'野生鰻魚的數量越來越少，可以說數量＿＿＿。',o:['節節下降','供不應求','胚胎幹細胞'],a:0},
+  {q:'以前養鰻魚幾乎完全＿＿＿野生的小鰻魚。',o:['標榜','仰賴','洄游'],a:1},
+  {q:'鰻魚太受歡迎、常常＿＿＿，所以價格很高。',o:['供不應求','過度捕撈','永續'],a:0},
+  {q:'科學家用受精卵的＿＿＿，做成類器官。',o:['胚胎幹細胞','適口性','洄游'],a:0},
+];
+var mg5done=0;
+function initMG5(){
+  mg5done=0;var b=document.getElementById('mg5-body');b.innerHTML='';
+  MG5.forEach(function(it,qi){
+    var q=document.createElement('div');q.className='q';
+    q.innerHTML='<div class="q-t"><span class="qn">'+(qi+1)+'</span>'+it.q+'</div>';
+    var opts=document.createElement('div');opts.className='opts';
+    it.o.forEach(function(t,oi){var btn=document.createElement('button');btn.className='opt';btn.textContent=t;
+      btn.onclick=function(){if(opts.classList.contains('answered'))return;
+        if(oi===it.a){opts.classList.add('answered');opts.querySelectorAll('.opt').forEach(function(x){x.classList.add('lock');});btn.classList.add('right');mg5done++;document.getElementById('mg5-score').textContent='完成 '+mg5done+' / 4'+(mg5done===4?'　🎉':'');if(mg5done===4)recordGame('cultivated_eel_vocab_fill','生詞填空',4,0,4,{});}
+        else{btn.classList.add('wrong');setTimeout(function(){btn.classList.remove('wrong');},350);}};
+      opts.appendChild(btn);});
+    q.appendChild(opts);b.appendChild(q);
+  });
+  document.getElementById('mg5-score').textContent='完成 0 / 4';
+}
+
 /* ---------------- 表格 8 ---------------- */
 const T8=[
   {co:'Forsea Foods',ct:'以色列',sf:'鰻魚'},
@@ -693,7 +954,7 @@ document.querySelectorAll('#tbl8 th').forEach(th=>{th.onclick=()=>{const k=th.da
 /* 深層連結：網址加 #p4 可直接跳到第 4 頁（供越南班週課索引連到指定段落）*/
 function gotoHash(){var m=(location.hash||'').match(/p(\d+)/);if(m){var n=+m[1];if(n>=1&&n<=total)show(n-1);}}
 window.addEventListener('hashchange',gotoHash);
-initMG1();initMG2();initMG3();initMG4();renderT8();show(0);gotoHash();
+initMG1();initMG2();initMG3();initMG4();initMG5();renderT8();subscribePoll();show(0);gotoHash();
 </script>
 </body>
 </html>'''
