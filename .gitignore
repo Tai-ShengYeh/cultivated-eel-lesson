@@ -1,0 +1,8 @@
+# 教師專用素材（含答案 / 範文），不公開到學生網址
+game_imports/
+gen_game_imports.py
+edcafe_writing_assignment.md
+
+# Python
+__pycache__/
+*.pyc
