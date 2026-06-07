@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏆 學習排行榜｜人造鰻魚飯</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e27;--bg2:#11163a;--ink:#eef3ff;--ink2:#b8c5e0;--ink3:#7a8bb8;--ink4:#4a5680;--accent:#00d4ff;--accent2:#ff006e;--ok:#27e0a0;--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05)}
+html,body{height:100%}
+body{background:radial-gradient(1200px 700px at 75% -10%,#18204d,#0a0e27 55%),var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;padding:32px 40px;min-height:100vh}
+.mono{font-family:"JetBrains Mono",monospace}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+h1{font-size:clamp(1.8rem,3.4vw,2.8rem);font-weight:900}
+h1 .em{color:var(--accent)}
+.live{font-family:"JetBrains Mono",monospace;font-size:.9rem;color:var(--ink3)}
+.live b{color:var(--accent)}
+.sub{color:var(--ink2);font-size:clamp(.95rem,1.5vw,1.2rem);margin-bottom:22px}
+.sub b{color:var(--accent)}
+.row{display:grid;grid-template-columns:64px 1fr auto auto;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 22px;margin-bottom:12px;transition:.3s}
+.row.r1{border-color:#ffd54a;background:linear-gradient(90deg,rgba(255,213,74,.14),rgba(255,213,74,.03))}
+.row.r2{border-color:#cfd8e3;background:linear-gradient(90deg,rgba(207,216,227,.12),transparent)}
+.row.r3{border-color:#e8a06a;background:linear-gradient(90deg,rgba(232,160,106,.12),transparent)}
+.rank{font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:900;text-align:center;color:var(--ink3)}
+.name{font-size:clamp(1.2rem,2.2vw,1.7rem);font-weight:700}
+.dots{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.dot{font-size:clamp(.72rem,1.1vw,.92rem);padding:3px 10px;border-radius:8px;border:1px solid var(--line);color:var(--ink4);font-weight:700}
+.dot.on{color:#06122b;background:linear-gradient(135deg,var(--accent),#2bb8d8);border-color:transparent}
+.donecount{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:900;color:var(--accent);text-align:center;min-width:80px}
+.donecount span{display:block;font-size:.62em;color:var(--ink3);font-weight:500}
+.avg{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:900;color:var(--ok);text-align:center;min-width:78px}
+.avg span{display:block;font-size:.62em;color:var(--ink3);font-weight:500}
+.empty{text-align:center;color:var(--ink3);padding:70px 20px;font-size:clamp(1rem,1.8vw,1.4rem);line-height:1.8}
+.foot{margin-top:20px;text-align:center;color:var(--ink4);font-size:.82rem}
+.note{text-align:center;color:var(--accent2);font-weight:700;font-size:clamp(.95rem,1.5vw,1.2rem);margin:4px 0 18px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏆 今天的<span class="em">學習排行榜</span></h1>
+  <div class="live" id="live">● 連線中…</div>
+</header>
+<div class="sub" id="sub">人造鰻魚飯 × 培植肉</div>
+<div class="note">完成越多遊戲、分數越高，排越前面 — 加油！</div>
+<div id="board"><div class="empty">載入中…</div></div>
+<div class="foot mono" id="foot"></div>
+
+<script>
+var SUPA="https://qmldcjkllisvfgegkfsz.supabase.co";
+var ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtbGRjamtsbGlzdmZnZWdrZnN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMjM5ODYsImV4cCI6MjA4NjY5OTk4Nn0.Bfj0W7HN_n_vcjGe5502Chamk0YV-de8a0fxF4Nyczk";
+var GAMES=[["cultivated_eel_vocab_match","配對"],["cultivated_eel_vocab_fill","填空"],["cultivated_eel_reading_quiz","閱讀"],["cultivated_eel_stance","思辨"],["cultivated_eel_cloze","句型"]];
+var sess=new URLSearchParams(location.search).get("session");
+var live=document.getElementById("live"),board=document.getElementById("board"),sub=document.getElementById("sub"),foot=document.getElementById("foot");
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+function medal(i){return i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);}
+
+function load(){
+  if(!sess){ board.innerHTML='<div class="empty">請在網址加上場次，例如<br><b class="mono">?session=20260608_VN1</b><br>（要和學生用的場次一樣）</div>'; live.textContent="● 未設定場次"; return; }
+  var url=SUPA+"/rest/v1/interactions?course_code=eq.cultivated-eel&session_id=eq."+encodeURIComponent(sess)+"&select=student_id,student_name,game_id,score,total&order=id.desc";
+  fetch(url,{headers:{apikey:ANON,Authorization:"Bearer "+ANON}}).then(function(r){return r.json();}).then(function(rows){
+    sub.innerHTML='人造鰻魚飯 × 培植肉　·　場次 <b>'+esc(sess)+'</b>';
+    if(!Array.isArray(rows)){throw new Error("bad");}
+    if(!rows.length){ board.innerHTML='<div class="empty">等學生開始作答…<br>學生掃封面 QR、輸入名字、玩遊戲後就會出現在這裡。</div>'; live.textContent="● 已連線 · 0 人"; foot.textContent=""; return; }
+    var stu={};
+    rows.forEach(function(x){
+      var id=x.student_id||"?";
+      if(!stu[id]) stu[id]={name:x.student_name||id, games:{}, sc:0, tt:0};
+      if(x.student_name) stu[id].name=x.student_name;
+      if(!stu[id].games[x.game_id]){ stu[id].games[x.game_id]=1; stu[id].sc+=(x.score||0); stu[id].tt+=(x.total||0); }
+    });
+    var arr=Object.keys(stu).map(function(id){var s=stu[id];var done=GAMES.filter(function(g){return s.games[g[0]];}).length;var avg=s.tt?Math.round(s.sc/s.tt*100):0;return {name:s.name,games:s.games,done:done,avg:avg};});
+    arr.sort(function(a,b){ return (b.done-a.done) || (b.avg-a.avg) || a.name.localeCompare(b.name,"zh-Hant"); });
+    var html="";
+    arr.forEach(function(p,i){
+      var dots=GAMES.map(function(g){return '<span class="dot'+(p.games[g[0]]?" on":"")+'">'+(p.games[g[0]]?"✓":"○")+g[1]+'</span>';}).join("");
+      var rc=i===0?"r1":i===1?"r2":i===2?"r3":"";
+      html+='<div class="row '+rc+'"><div class="rank">'+medal(i)+'</div>'
+        +'<div><div class="name">'+esc(p.name)+'</div><div class="dots">'+dots+'</div></div>'
+        +'<div class="donecount">'+p.done+'/5<span>完成</span></div>'
+        +'<div class="avg">'+p.avg+'%<span>平均</span></div></div>';
+    });
+    board.innerHTML=html;
+    var avgDone=(arr.reduce(function(a,b){return a+b.done;},0)/arr.length).toFixed(1);
+    live.innerHTML='● 即時 · <b>'+arr.length+'</b> 人報到';
+    foot.textContent="全班平均完成 "+avgDone+" / 5 個遊戲　·　每 6 秒自動更新　·　更新於 "+new Date().toLocaleTimeString("zh-TW");
+  }).catch(function(e){ live.textContent="● 連線異常"; });
+}
+load(); setInterval(load,6000);
+</script>
+</body>
+</html>

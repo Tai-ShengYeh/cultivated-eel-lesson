@@ -67,6 +67,17 @@ b,strong{font-weight:700;}
 #pageinfo b{color:var(--accent);font-size:1rem;}
 #hint{position:fixed;left:22px;bottom:16px;z-index:40;font-size:.7rem;color:var(--ink4);}
 #supa{position:fixed;left:22px;bottom:34px;z-index:40;font-size:.66rem;letter-spacing:.04em;color:var(--accent);font-family:"JetBrains Mono",monospace;opacity:.85;}
+#namegate{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(6,10,30,.86);backdrop-filter:blur(8px);}
+.ng-card{background:var(--bg2);border:1px solid var(--line);border-radius:22px;padding:38px 42px;text-align:center;max-width:440px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.6);}
+.ng-emoji{font-size:3.2rem;margin-bottom:10px;}
+.ng-title{font-size:1.7rem;font-weight:900;margin-bottom:10px;}
+.ng-sub{font-size:1rem;color:var(--ink2);margin-bottom:22px;line-height:1.7;}
+.ng-sub span{color:var(--ink3);font-size:.88rem;}
+#ng-input{width:100%;padding:15px 18px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font-size:1.15rem;text-align:center;outline:none;font-family:inherit;}
+#ng-input:focus{border-color:var(--accent);}
+#ng-btn{margin-top:18px;width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06122b;font-size:1.15rem;font-weight:900;cursor:pointer;}
+#ng-btn:hover{filter:brightness(1.08);}
+.ng-foot{margin-top:16px;font-size:.78rem;color:var(--ink4);font-family:"JetBrains Mono",monospace;}
 
 /* ---------- slides ---------- */
 .slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -319,6 +330,14 @@ b,strong{font-weight:700;}
 <div id="pageinfo"><b>1</b> / 13</div>
 <div id="hint">← → 翻頁 · 點兩側翻頁 · F 全螢幕</div>
 <div id="supa"></div>
+<div id="namegate"><div class="ng-card">
+  <div class="ng-emoji">🐟</div>
+  <div class="ng-title">歡迎上課！</div>
+  <div class="ng-sub">請輸入你的名字，老師才看得到你的參與。<br><span>Nhập tên của bạn để bắt đầu</span></div>
+  <input id="ng-input" placeholder="你的名字 / Tên" maxlength="20" autocomplete="off">
+  <button id="ng-btn" onclick="enterName()">開始上課 →</button>
+  <div class="ng-foot">場次 · <span id="ng-session"></span></div>
+</div></div>
 
 <!-- 1 封面 -->
 <section class="slide active" data-slide="1" data-section="引起動機">
@@ -802,6 +821,10 @@ function startBreak(){
   var iv=setInterval(function(){ t--; var m=Math.floor(t/60),s=t%60; el.textContent=m+':'+(s<10?'0':'')+s; if(t<=0){clearInterval(iv);el.textContent='時間到 🔔';} },1000);
 }
 
+/* ---- 上課輸入名字（老師 present 模式跳過；學生輸入後遊戲/投票紀錄帶名字）---- */
+function enterName(){var v=document.getElementById('ng-input').value.trim();if(!v){document.getElementById('ng-input').focus();return;}STU_NAME=v;localStorage.setItem('eel_student_name',v);var g=document.getElementById('namegate');if(g)g.style.display='none';}
+function maybeGate(){var g=document.getElementById('namegate');if(!g)return;var s=document.getElementById('ng-session');if(s)s.textContent=SESSION;if(!PRESENT && !STU_NAME){g.style.display='flex';var i=document.getElementById('ng-input');if(i){i.addEventListener('keydown',function(e){if(e.key==='Enter')enterName();});setTimeout(function(){i.focus();},150);}}}
+
 (function(){var se=document.getElementById('supa');if(se)se.textContent=PRESENT?'':('📡 連線中 · '+SESSION);
   var join=location.origin+location.pathname+'?session='+encodeURIComponent(SESSION);
   var q=document.getElementById('coverQR');if(q)q.src='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data='+encodeURIComponent(join);
@@ -954,7 +977,7 @@ document.querySelectorAll('#tbl8 th').forEach(th=>{th.onclick=()=>{const k=th.da
 /* 深層連結：網址加 #p4 可直接跳到第 4 頁（供越南班週課索引連到指定段落）*/
 function gotoHash(){var m=(location.hash||'').match(/p(\d+)/);if(m){var n=+m[1];if(n>=1&&n<=total)show(n-1);}}
 window.addEventListener('hashchange',gotoHash);
-initMG1();initMG2();initMG3();initMG4();initMG5();renderT8();subscribePoll();show(0);gotoHash();
+initMG1();initMG2();initMG3();initMG4();initMG5();renderT8();subscribePoll();maybeGate();show(0);gotoHash();
 </script>
 </body>
 </html>'''
