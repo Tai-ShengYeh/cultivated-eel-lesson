@@ -622,7 +622,10 @@ function renderT8(){
 document.querySelectorAll('#tbl8 th').forEach(th=>{th.onclick=()=>{const k=th.dataset.k;if(k===t8key)t8dir*=-1;else{t8key=k;t8dir=1;}renderT8();};});
 
 /* ---------------- init ---------------- */
-initMG1();initMG2();initMG3();initMG4();renderT8();show(0);
+/* 深層連結：網址加 #p4 可直接跳到第 4 頁（供越南班週課索引連到指定段落）*/
+function gotoHash(){var m=(location.hash||'').match(/p(\d+)/);if(m){var n=+m[1];if(n>=1&&n<=total)show(n-1);}}
+window.addEventListener('hashchange',gotoHash);
+initMG1();initMG2();initMG3();initMG4();renderT8();show(0);gotoHash();
 </script>
 </body>
 </html>
