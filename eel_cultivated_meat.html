@@ -68,6 +68,12 @@ b,strong{font-weight:700;}
   background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;}
 .cover-sub{margin-top:22px;font-size:clamp(1.1rem,2vw,1.55rem);color:var(--ink2);line-height:1.6;}
 .cover-src{margin-top:26px;font-size:.82rem;color:var(--ink3);font-family:"JetBrains Mono",monospace;}
+.cover-qr{position:absolute;right:64px;bottom:84px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:9px;background:rgba(10,14,39,.5);backdrop-filter:blur(8px);border:1px solid rgba(0,212,255,.38);border-radius:18px;padding:18px 20px 15px;text-align:center;}
+.cover-qr-card{background:#fff;border-radius:12px;padding:11px;line-height:0;box-shadow:0 10px 34px rgba(0,0,0,.45);}
+.cover-qr-card img{width:190px;height:190px;display:block;}
+.cover-qr-zh{color:var(--accent);font-weight:700;font-size:clamp(.95rem,1.35vw,1.16rem);}
+.cover-qr-vi{color:var(--ink2);font-size:clamp(.8rem,1.05vw,.96rem);}
+@media (max-width:1100px){.cover-qr{position:static;margin:18px auto 0;right:auto;bottom:auto;}.cover-qr-card img{width:150px;height:150px;}}
 
 /* ---------- stats ---------- */
 .stat-row{display:flex;gap:54px;align-items:center;justify-content:center;flex-wrap:wrap;margin:6px 0 4px;}
@@ -251,6 +257,11 @@ b,strong{font-weight:700;}
       <h1 class="cover-title">人造鰻魚飯？</h1>
       <p class="cover-sub">用科技在實驗室養出鰻魚肉，<br>救救快要消失的鰻魚。</p>
       <div class="cover-src">改寫自 foodNEXT 食力《培植肉拯救瀕危魚類　人造鰻魚飯預計 2025 年上市》</div>
+    </div>
+    <div class="cover-qr">
+      <div class="cover-qr-card"><img id="coverQR" alt="掃我加入課程 / Quét mã QR" src=""></div>
+      <div class="cover-qr-zh">📱 手機掃我，一起上課</div>
+      <div class="cover-qr-vi">Quét mã QR để tham gia</div>
     </div>
   </div>
 </section>
@@ -525,7 +536,10 @@ function recordGame(game_id,game_name,score,wrong,total,meta){
     body:JSON.stringify({course_code:'cultivated-eel',session_id:SESSION,student_id:STU_ID,student_name:STU_NAME,game_id:game_id,game_name:game_name,score:score,wrong:wrong,total:total,duration_ms:0,client_meta:meta||{}})
   }).then(function(r){var se=document.getElementById('supa');if(se&&r.ok)se.textContent='📡 已記錄 · '+SESSION;}).catch(function(e){console.warn('supa log failed',e);});}catch(e){}
 }
-(function(){var se=document.getElementById('supa');if(se)se.textContent=PRESENT?'':('📡 連線中 · '+SESSION);})();
+(function(){var se=document.getElementById('supa');if(se)se.textContent=PRESENT?'':('📡 連線中 · '+SESSION);
+  var join=location.origin+location.pathname+'?session='+encodeURIComponent(SESSION);
+  var q=document.getElementById('coverQR');if(q)q.src='https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=12&data='+encodeURIComponent(join);
+})();
 
 /* ---------------- MG1 生詞配對 ---------------- */
 const MG1=[
