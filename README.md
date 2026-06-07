@@ -38,6 +38,20 @@ python build_deck.py        # 產出 eel_cultivated_meat.html
 - `F` 全螢幕
 - minigame 區點擊不會翻頁，可放心作答
 
+## 課堂記錄（Supabase，比照 W14 麥當勞）
+
+4 個遊戲完成時會寫一筆到 Supabase `interactions` 表（`course_code='cultivated-eel'`），
+進 master dashboard。**純 insert 公開金鑰、連不上也不影響遊戲**。
+
+- **分班**：網址加 `?session=班級`，例如
+  `https://tai-shengyeh.github.io/cultivated-eel-lesson/?session=20260608_VN1`
+  （不加時預設 `YYYYMMDD_VN1`）
+- **學生**：自動產生匿名 `S-xxxxx`（存 localStorage）；可選 `?name=王小明` 帶名字
+- **純投影/不記錄**：加 `?present=1`（或 `?nolog=1`）
+- 左下角 `📡` 指示燈顯示連線/已記錄狀態
+- 記錄欄位：`session_id / student_id / game_id / score / wrong / total / client_meta`
+  （思辨立場存 `client_meta.stance`、生詞配對存 `client_meta.wrong`）
+
 ## 鏡像／延伸
 
 - 可用 `slide-to-game-imports` 讀此 HTML 自動產 Kahoot/Wordwall/Gimkit 題庫
