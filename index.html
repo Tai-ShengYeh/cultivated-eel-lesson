@@ -36,6 +36,7 @@ b,strong{font-weight:700;}
   font-size:.8rem;color:var(--ink3);}
 #pageinfo b{color:var(--accent);font-size:1rem;}
 #hint{position:fixed;left:22px;bottom:16px;z-index:40;font-size:.7rem;color:var(--ink4);}
+#supa{position:fixed;left:22px;bottom:34px;z-index:40;font-size:.66rem;letter-spacing:.04em;color:var(--accent);font-family:"JetBrains Mono",monospace;opacity:.85;}
 
 /* ---------- slides ---------- */
 .slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -238,6 +239,7 @@ b,strong{font-weight:700;}
 <div id="sectag">— 引起動機 —</div>
 <div id="pageinfo"><b>1</b> / 13</div>
 <div id="hint">← → 翻頁 · 點兩側翻頁 · F 全螢幕</div>
+<div id="supa"></div>
 
 <!-- 1 封面 -->
 <section class="slide active" data-slide="1" data-section="引起動機">
@@ -505,6 +507,26 @@ document.addEventListener('click',e=>{
   if(x>w*0.62)next(); else if(x<w*0.38)prev();
 });
 
+/* ---------------- Supabase 記錄（insert-only 公開金鑰；?session=班級 分班；連不上不影響遊戲）---------------- */
+var SUPA_URL='https://qmldcjkllisvfgegkfsz.supabase.co';
+var SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtbGRjamtsbGlzdmZnZWdrZnN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMjM5ODYsImV4cCI6MjA4NjY5OTk4Nn0.Bfj0W7HN_n_vcjGe5502Chamk0YV-de8a0fxF4Nyczk';
+var _qs=new URLSearchParams(location.search);
+var SESSION=_qs.get('session')||(new Date().toISOString().slice(0,10).replace(/-/g,'')+'_VN1');
+var PRESENT=_qs.get('present')==='1'||_qs.get('nolog')==='1';
+var STU_NAME=_qs.get('name')||localStorage.getItem('eel_student_name')||null;
+if(_qs.get('name'))localStorage.setItem('eel_student_name',_qs.get('name'));
+var STU_ID=localStorage.getItem('eel_student_id');
+if(!STU_ID){STU_ID='S-'+Math.random().toString(36).slice(2,8).toUpperCase();localStorage.setItem('eel_student_id',STU_ID);}
+var _logged={};
+function recordGame(game_id,game_name,score,wrong,total,meta){
+  if(PRESENT||_logged[game_id])return; _logged[game_id]=true;
+  try{fetch(SUPA_URL+'/rest/v1/interactions',{method:'POST',
+    headers:{'apikey':SUPA_ANON,'Authorization':'Bearer '+SUPA_ANON,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({course_code:'cultivated-eel',session_id:SESSION,student_id:STU_ID,student_name:STU_NAME,game_id:game_id,game_name:game_name,score:score,wrong:wrong,total:total,duration_ms:0,client_meta:meta||{}})
+  }).then(function(r){var se=document.getElementById('supa');if(se&&r.ok)se.textContent='📡 已記錄 · '+SESSION;}).catch(function(e){console.warn('supa log failed',e);});}catch(e){}
+}
+(function(){var se=document.getElementById('supa');if(se)se.textContent=PRESENT?'':('📡 連線中 · '+SESSION);})();
+
 /* ---------------- MG1 生詞配對 ---------------- */
 const MG1=[
   {w:'瀕危',m:'快要消失、有滅絕的危險'},
@@ -514,9 +536,9 @@ const MG1=[
   {w:'類器官',m:'實驗室培養、像真器官的組織'},
 ];
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-let mg1sel=null,mg1done=0;
+let mg1sel=null,mg1done=0,mg1wrong=0;
 function initMG1(){
-  mg1sel=null;mg1done=0;
+  mg1sel=null;mg1done=0;mg1wrong=0;
   const wc=document.getElementById('mg1-words'),mc=document.getElementById('mg1-means');
   wc.innerHTML='';mc.innerHTML='';
   shuffle(MG1).forEach(o=>{const d=document.createElement('div');d.className='pair word';d.textContent=o.w;d.dataset.w=o.w;
@@ -524,8 +546,9 @@ function initMG1(){
   shuffle(MG1).forEach(o=>{const d=document.createElement('div');d.className='pair';d.textContent=o.m;d.dataset.w=o.w;
     d.onclick=()=>{if(d.classList.contains('done'))return;if(!mg1sel){return;}
       if(mg1sel===o.w){d.classList.add('done');const wd=document.querySelector('#mg1-words .pair[data-w="'+o.w+'"]');wd.classList.remove('sel');wd.classList.add('done');mg1sel=null;mg1done++;
-        document.getElementById('mg1-score').textContent='完成 '+mg1done+' / 5'+(mg1done===5?'　🎉 全對！':'');}
-      else{d.classList.add('bad');setTimeout(()=>d.classList.remove('bad'),350);}};mc.appendChild(d);});
+        document.getElementById('mg1-score').textContent='完成 '+mg1done+' / 5'+(mg1done===5?'　🎉 全對！':'');
+        if(mg1done===5)recordGame('cultivated_eel_vocab_match','生詞配對',5,mg1wrong,5,{wrong:mg1wrong});}
+      else{mg1wrong++;d.classList.add('bad');setTimeout(()=>d.classList.remove('bad'),350);}};mc.appendChild(d);});
   document.getElementById('mg1-score').textContent='完成 0 / 5';
 }
 
@@ -536,9 +559,9 @@ const MG2=[
   {q:'培植鰻魚肉主要是用什麼做出來的？',o:['鰻魚的胚胎幹細胞（類器官）','大豆蛋白','麵粉和澱粉','野生鰻苗'],a:0,f:'用受精卵的胚胎幹細胞做成類器官，再長出培植肉。'},
   {q:'下列哪一項「不是」這種培植肉的特點？',o:['不使用抗生素','不使用激素','組織像真的魚肉','需要大量野生鰻魚'],a:3,f:'培植肉正是為了「不再依賴野生鰻魚」而開發的。'},
 ];
-let mg2score=0;
+let mg2score=0,mg2answered=0;
 function initMG2(){
-  mg2score=0;const b=document.getElementById('mg2-body');b.innerHTML='';
+  mg2score=0;mg2answered=0;const b=document.getElementById('mg2-body');b.innerHTML='';
   MG2.forEach((it,qi)=>{
     const q=document.createElement('div');q.className='q';
     q.innerHTML='<div class="q-t"><span class="qn">Q'+(qi+1)+'</span>'+it.q+'</div>';
@@ -549,7 +572,8 @@ function initMG2(){
         const fb=q.querySelector('.fb');
         if(oi===it.a){btn.classList.add('right');mg2score++;fb.className='fb good';fb.textContent='✓ 答對了！'+it.f;}
         else{btn.classList.add('wrong');opts.children[it.a].classList.add('right');fb.className='fb no';fb.textContent='✗ 正確答案已標綠。'+it.f;}
-        document.getElementById('mg2-score').textContent='得分 '+mg2score+' / 4';};
+        document.getElementById('mg2-score').textContent='得分 '+mg2score+' / 4';
+        mg2answered++;if(mg2answered===4)recordGame('cultivated_eel_reading_quiz','閱讀小測驗',mg2score,4-mg2score,4,{});};
       opts.appendChild(btn);});
     q.appendChild(opts);const fb=document.createElement('div');fb.className='fb';q.appendChild(fb);b.appendChild(q);
   });
@@ -569,7 +593,7 @@ function initMG3(){
   mg3stance=null;mg3reasons.clear();
   document.getElementById('mg3-after').classList.add('hidden');
   document.querySelectorAll('#mg3-stance button').forEach(b=>{b.classList.remove('on');
-    b.onclick=()=>{document.querySelectorAll('#mg3-stance button').forEach(x=>x.classList.remove('on'));b.classList.add('on');mg3stance=b.dataset.s;document.getElementById('mg3-after').classList.remove('hidden');mg3render();};});
+    b.onclick=()=>{document.querySelectorAll('#mg3-stance button').forEach(x=>x.classList.remove('on'));b.classList.add('on');mg3stance=b.dataset.s;document.getElementById('mg3-after').classList.remove('hidden');mg3render();recordGame('cultivated_eel_stance','思辨立場',0,0,1,{stance:mg3stance});};});
   const rc=document.getElementById('mg3-reasons');rc.innerHTML='';
   MG3R.forEach(t=>{const c=document.createElement('div');c.className='rchip';c.textContent=t;
     c.onclick=()=>{if(c.classList.toggle('on'))mg3reasons.add(t);else mg3reasons.delete(t);mg3render();};rc.appendChild(c);});
@@ -597,7 +621,8 @@ function initMG4(){
       btn.onclick=()=>{if(opts.classList.contains('answered'))return;
         if(oi===it.a){opts.classList.add('answered');opts.querySelectorAll('.opt').forEach(x=>x.classList.add('lock'));btn.classList.add('right');
           cz.className='cloze filled';cz.innerHTML='<span class="qn" style="color:var(--ok);font-weight:700;margin-right:8px">句'+(qi+1)+'</span>'+it.filled;
-          mg4done++;document.getElementById('mg4-score').textContent='完成 '+mg4done+' / 3'+(mg4done===3?'　🎉':'');}
+          mg4done++;document.getElementById('mg4-score').textContent='完成 '+mg4done+' / 3'+(mg4done===3?'　🎉':'');
+          if(mg4done===3)recordGame('cultivated_eel_cloze','句型克漏字',3,0,3,{});}
         else{btn.classList.add('wrong');setTimeout(()=>btn.classList.remove('wrong'),350);}};
       opts.appendChild(btn);});
     q.appendChild(opts);b.appendChild(q);
