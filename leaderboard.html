@@ -27,6 +27,16 @@ h1 .em{color:var(--accent)}
 .allbadge{font-size:.66rem;font-weight:800;color:#06231a;background:var(--ok);border-radius:8px;padding:3px 9px;margin-left:10px;vertical-align:middle;white-space:nowrap}
 #privtoggle{background:var(--card);border:1px solid var(--line);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:.85rem;cursor:pointer;font-family:inherit;white-space:nowrap}
 #privtoggle:hover{border-color:var(--accent);color:var(--accent)}
+#chart{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 24px;margin-bottom:22px}
+#chart:empty{display:none}
+.chart-title{font-weight:900;color:var(--accent);font-size:clamp(1rem,1.6vw,1.3rem);margin-bottom:14px}
+.cbar{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center;margin-bottom:10px;font-size:clamp(.85rem,1.3vw,1.05rem)}
+.cbar:last-child{margin-bottom:0}
+.cbar-l{color:var(--ink2);font-weight:700}
+.cbar-track{height:18px;background:rgba(255,255,255,.07);border-radius:9px;overflow:hidden}
+.cbar-fill{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease}
+.cbar-v{color:var(--accent);font-weight:700;font-family:"JetBrains Mono",monospace;min-width:120px;text-align:right;white-space:nowrap}
+.more{text-align:center;color:var(--ink3);padding:14px;font-size:clamp(.9rem,1.4vw,1.1rem)}
 .rank{font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:900;text-align:center;color:var(--ink3)}
 .name{font-size:clamp(1.2rem,2.2vw,1.7rem);font-weight:700}
 .dots{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
@@ -51,6 +61,7 @@ h1 .em{color:var(--accent)}
 </header>
 <div class="sub" id="sub">人造鰻魚飯 × 培植肉</div>
 <div class="note">完成越多遊戲、分數越高，排越前面 — 加油！</div>
+<div id="chart"></div>
 <div id="board"><div class="empty">載入中…</div></div>
 <div class="foot mono" id="foot"></div>
 
@@ -72,7 +83,7 @@ function load(){
   fetch(url,{headers:{apikey:ANON,Authorization:"Bearer "+ANON}}).then(function(r){return r.json();}).then(function(rows){
     sub.innerHTML='人造鰻魚飯 × 培植肉　·　場次 <b>'+esc(sess)+'</b>';
     if(!Array.isArray(rows)){throw new Error("bad");}
-    if(!rows.length){ board.innerHTML='<div class="empty">等學生開始作答…<br>學生掃封面 QR、輸入名字、玩遊戲後就會出現在這裡。</div>'; live.textContent="● 已連線 · 0 人"; foot.textContent=""; return; }
+    if(!rows.length){ board.innerHTML='<div class="empty">等學生開始作答…<br>學生掃封面 QR、輸入名字、玩遊戲後就會出現在這裡。</div>'; document.getElementById("chart").innerHTML=""; live.textContent="● 已連線 · 0 人"; foot.textContent=""; return; }
     var stu={};
     rows.forEach(function(x){
       var id=x.student_id||"?";
@@ -82,8 +93,11 @@ function load(){
     });
     var arr=Object.keys(stu).map(function(id){var s=stu[id];var done=GAMES.filter(function(g){return s.games[g[0]];}).length;var avg=s.tt?Math.round(s.sc/s.tt*100):0;return {name:s.name,games:s.games,done:done,avg:avg};});
     arr.sort(function(a,b){ return (b.done-a.done) || (b.avg-a.avg) || a.name.localeCompare(b.name,"zh-Hant"); });
+    var ch='<div class="chart-title">全班完成度（共 '+arr.length+' 人）</div>';
+    GAMES.forEach(function(g){var cnt=arr.filter(function(p){return p.games[g[0]];}).length;var pc=arr.length?Math.round(cnt/arr.length*100):0;ch+='<div class="cbar"><span class="cbar-l">'+g[1]+'</span><span class="cbar-track"><span class="cbar-fill" style="width:'+pc+'%"></span></span><span class="cbar-v">'+cnt+'/'+arr.length+'（'+pc+'%）</span></div>';});
+    document.getElementById("chart").innerHTML=ch;
     var html="";
-    arr.forEach(function(p,i){
+    arr.slice(0,10).forEach(function(p,i){
       var dots=GAMES.map(function(g){return '<span class="dot'+(p.games[g[0]]?" on":"")+'">'+(p.games[g[0]]?"✓":"○")+g[1]+'</span>';}).join("");
       var rc=i===0?"r1":i===1?"r2":i===2?"r3":"";
       if(p.done===5)rc+=" alldone";
@@ -93,10 +107,11 @@ function load(){
         +'<div class="donecount">'+p.done+'/5<span>完成</span></div>'
         +'<div class="avg">'+p.avg+'%<span>平均</span></div></div>';
     });
+    if(arr.length>10) html+='<div class="more">…還有 '+(arr.length-10)+' 位同學，繼續加油！</div>';
     board.innerHTML=html;
     var avgDone=(arr.reduce(function(a,b){return a+b.done;},0)/arr.length).toFixed(1);
     live.innerHTML='● 即時 · <b>'+arr.length+'</b> 人報到';
-    foot.textContent="全班平均完成 "+avgDone+" / 5 個遊戲　·　每 6 秒自動更新　·　更新於 "+new Date().toLocaleTimeString("zh-TW");
+    foot.textContent="顯示前 10 名　·　全班平均完成 "+avgDone+" / 5　·　每 6 秒自動更新　·　更新於 "+new Date().toLocaleTimeString("zh-TW");
   }).catch(function(e){ live.textContent="● 連線異常"; });
 }
 (function(){var b=document.getElementById("privtoggle");if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字";})();
