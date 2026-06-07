@@ -23,6 +23,10 @@ h1 .em{color:var(--accent)}
 .row.r1{border-color:#ffd54a;background:linear-gradient(90deg,rgba(255,213,74,.14),rgba(255,213,74,.03))}
 .row.r2{border-color:#cfd8e3;background:linear-gradient(90deg,rgba(207,216,227,.12),transparent)}
 .row.r3{border-color:#e8a06a;background:linear-gradient(90deg,rgba(232,160,106,.12),transparent)}
+.row.alldone{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok),0 0 26px rgba(39,224,160,.28)}
+.allbadge{font-size:.66rem;font-weight:800;color:#06231a;background:var(--ok);border-radius:8px;padding:3px 9px;margin-left:10px;vertical-align:middle;white-space:nowrap}
+#privtoggle{background:var(--card);border:1px solid var(--line);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:.85rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+#privtoggle:hover{border-color:var(--accent);color:var(--accent)}
 .rank{font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:900;text-align:center;color:var(--ink3)}
 .name{font-size:clamp(1.2rem,2.2vw,1.7rem);font-weight:700}
 .dots{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
@@ -40,7 +44,10 @@ h1 .em{color:var(--accent)}
 <body>
 <header>
   <h1>🏆 今天的<span class="em">學習排行榜</span></h1>
-  <div class="live" id="live">● 連線中…</div>
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <button id="privtoggle" onclick="togglePriv()">🙈 隱藏名字</button>
+    <div class="live" id="live">● 連線中…</div>
+  </div>
 </header>
 <div class="sub" id="sub">人造鰻魚飯 × 培植肉</div>
 <div class="note">完成越多遊戲、分數越高，排越前面 — 加油！</div>
@@ -55,6 +62,9 @@ var sess=new URLSearchParams(location.search).get("session");
 var live=document.getElementById("live"),board=document.getElementById("board"),sub=document.getElementById("sub"),foot=document.getElementById("foot");
 function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
 function medal(i){return i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);}
+var HIDE=new URLSearchParams(location.search).get("anon")==="1";
+function maskName(n){ if(!HIDE) return n; if(/^S-/.test(n)) return n; if(n.length<=1) return n+"○"; return n.charAt(0)+"○".repeat(Math.min(n.length-1,2)); }
+function togglePriv(){ HIDE=!HIDE; var b=document.getElementById("privtoggle"); if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字"; load(); }
 
 function load(){
   if(!sess){ board.innerHTML='<div class="empty">請在網址加上場次，例如<br><b class="mono">?session=20260608_VN1</b><br>（要和學生用的場次一樣）</div>'; live.textContent="● 未設定場次"; return; }
@@ -76,8 +86,10 @@ function load(){
     arr.forEach(function(p,i){
       var dots=GAMES.map(function(g){return '<span class="dot'+(p.games[g[0]]?" on":"")+'">'+(p.games[g[0]]?"✓":"○")+g[1]+'</span>';}).join("");
       var rc=i===0?"r1":i===1?"r2":i===2?"r3":"";
+      if(p.done===5)rc+=" alldone";
+      var nm=(p.done===5?"🌟 ":"")+esc(maskName(p.name))+(p.done===5?'<span class="allbadge">全部完成</span>':'');
       html+='<div class="row '+rc+'"><div class="rank">'+medal(i)+'</div>'
-        +'<div><div class="name">'+esc(p.name)+'</div><div class="dots">'+dots+'</div></div>'
+        +'<div><div class="name">'+nm+'</div><div class="dots">'+dots+'</div></div>'
         +'<div class="donecount">'+p.done+'/5<span>完成</span></div>'
         +'<div class="avg">'+p.avg+'%<span>平均</span></div></div>';
     });
@@ -87,6 +99,7 @@ function load(){
     foot.textContent="全班平均完成 "+avgDone+" / 5 個遊戲　·　每 6 秒自動更新　·　更新於 "+new Date().toLocaleTimeString("zh-TW");
   }).catch(function(e){ live.textContent="● 連線異常"; });
 }
+(function(){var b=document.getElementById("privtoggle");if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字";})();
 load(); setInterval(load,6000);
 </script>
 </body>
