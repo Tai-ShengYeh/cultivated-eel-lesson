@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏆 學習排行榜（通用）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e27;--bg2:#11163a;--ink:#eef3ff;--ink2:#b8c5e0;--ink3:#7a8bb8;--ink4:#4a5680;--accent:#00d4ff;--accent2:#ff006e;--ok:#27e0a0;--line:rgba(255,255,255,.12);--card:rgba(255,255,255,.05)}
+html,body{height:100%}
+body{background:radial-gradient(1200px 700px at 75% -10%,#18204d,#0a0e27 55%),var(--bg);color:var(--ink);font-family:"Noto Sans TC",system-ui,sans-serif;padding:30px 38px;min-height:100vh}
+.mono{font-family:"JetBrains Mono",monospace}
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px}
+h1{font-size:clamp(1.7rem,3.2vw,2.6rem);font-weight:900}
+h1 .em{color:var(--accent)}
+.live{font-family:"JetBrains Mono",monospace;font-size:.9rem;color:var(--ink3)}
+.live b{color:var(--accent)}
+.sub{color:var(--ink2);font-size:clamp(.95rem,1.5vw,1.2rem);margin-bottom:14px}
+.sub b{color:var(--accent)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.tab{font-size:.85rem;padding:7px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink3);text-decoration:none;white-space:nowrap}
+.tab:hover{border-color:var(--accent);color:var(--accent)}
+.tab.cur{background:var(--accent);color:#06122b;border-color:transparent;font-weight:700}
+#privtoggle{background:var(--card);border:1px solid var(--line);color:var(--ink2);border-radius:10px;padding:8px 14px;font-size:.85rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+#privtoggle:hover{border-color:var(--accent);color:var(--accent)}
+#chart{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 24px;margin-bottom:22px}
+#chart:empty{display:none}
+.chart-title{font-weight:900;color:var(--accent);font-size:clamp(1rem,1.6vw,1.3rem);margin-bottom:14px}
+.cbar{display:grid;grid-template-columns:88px 1fr auto;gap:14px;align-items:center;margin-bottom:10px;font-size:clamp(.85rem,1.3vw,1.05rem)}
+.cbar:last-child{margin-bottom:0}
+.cbar-l{color:var(--ink2);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cbar-track{height:18px;background:rgba(255,255,255,.07);border-radius:9px;overflow:hidden}
+.cbar-fill{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease}
+.cbar-v{color:var(--accent);font-weight:700;font-family:"JetBrains Mono",monospace;min-width:118px;text-align:right;white-space:nowrap}
+.row{display:grid;grid-template-columns:60px 1fr auto auto;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 22px;margin-bottom:11px;transition:.3s}
+.row.r1{border-color:#ffd54a;background:linear-gradient(90deg,rgba(255,213,74,.14),rgba(255,213,74,.03))}
+.row.r2{border-color:#cfd8e3;background:linear-gradient(90deg,rgba(207,216,227,.12),transparent)}
+.row.r3{border-color:#e8a06a;background:linear-gradient(90deg,rgba(232,160,106,.12),transparent)}
+.row.alldone{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok),0 0 26px rgba(39,224,160,.28)}
+.allbadge{font-size:.66rem;font-weight:800;color:#06231a;background:var(--ok);border-radius:8px;padding:3px 9px;margin-left:10px;vertical-align:middle;white-space:nowrap}
+.rank{font-size:clamp(1.5rem,2.4vw,2.1rem);font-weight:900;text-align:center;color:var(--ink3)}
+.name{font-size:clamp(1.15rem,2.1vw,1.6rem);font-weight:700}
+.dots{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.dot{font-size:clamp(.72rem,1.1vw,.92rem);padding:3px 10px;border-radius:8px;border:1px solid var(--line);color:var(--ink4);font-weight:700}
+.dot.on{color:#06122b;background:linear-gradient(135deg,var(--accent),#2bb8d8);border-color:transparent}
+.donecount{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:900;color:var(--accent);text-align:center;min-width:78px}
+.donecount span{display:block;font-size:.6em;color:var(--ink3);font-weight:500}
+.avg{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:900;color:var(--ok);text-align:center;min-width:76px}
+.avg span{display:block;font-size:.6em;color:var(--ink3);font-weight:500}
+.more{text-align:center;color:var(--ink3);padding:14px;font-size:clamp(.9rem,1.4vw,1.1rem)}
+.empty{text-align:center;color:var(--ink3);padding:60px 20px;font-size:clamp(1rem,1.8vw,1.4rem);line-height:1.8}
+.foot{margin-top:18px;text-align:center;color:var(--ink4);font-size:.82rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏆 <span class="em">學習排行榜</span></h1>
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <button id="privtoggle" onclick="togglePriv()">🙈 隱藏名字</button>
+    <div class="live" id="live">● 連線中…</div>
+  </div>
+</header>
+<div class="sub" id="sub"></div>
+<div class="tabs" id="tabs"></div>
+<div id="chart"></div>
+<div id="board"><div class="empty">載入中…</div></div>
+<div class="foot mono" id="foot"></div>
+
+<script>
+var SUPA="https://qmldcjkllisvfgegkfsz.supabase.co";
+var ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtbGRjamtsbGlzdmZnZWdrZnN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMjM5ODYsImV4cCI6MjA4NjY5OTk4Nn0.Bfj0W7HN_n_vcjGe5502Chamk0YV-de8a0fxF4Nyczk";
+/* 每堂課的設定：哪張表、遊戲清單(id→中文標籤)。投票/報到不算「完成」 */
+var COURSES={
+  "cultivated-eel":{tbl:"interactions",label:"人造鰻魚飯 × 培植肉 (W16)",games:[["cultivated_eel_vocab_match","配對"],["cultivated_eel_vocab_fill","填空"],["cultivated_eel_reading_quiz","閱讀"],["cultivated_eel_stance","思辨"],["cultivated_eel_cloze","句型"]]},
+  "altprot-uni":{tbl:"interactions",label:"替代蛋白 · 大學 (W13)",games:[["altprot_uni_match","配對"],["altprot_uni_decision","決策樹"],["altprot_uni_vote","投票"]]},
+  "food-packaging-vn":{tbl:"interactions",label:"食品包裝綠色革命 (W14)",games:[["01_vocab_match","詞義配對"],["02_paragraph_match","句配段"],["04_process_order","流程排序"]]},
+  "altprot-class":{tbl:"interactions",label:"替代蛋白 · 高職班",games:[["altprot_match","配對"],["altprot_decision","決策樹"],["altprot_vote","投票"]]},
+  "cocoa":{tbl:"student_interactions",label:"無可可巧克力 (W15)",games:[["match","配對"],["fill","填空"],["truefalse","是非"],["order","排序"]]}
+};
+var ORDER=["cultivated-eel","altprot-uni","food-packaging-vn","altprot-class","cocoa"];
+var qs=new URLSearchParams(location.search);
+var course=qs.get("course")||"cultivated-eel";
+var sess=qs.get("session");
+var HIDE=qs.get("anon")==="1";
+var live=document.getElementById("live"),board=document.getElementById("board"),sub=document.getElementById("sub"),foot=document.getElementById("foot"),chartEl=document.getElementById("chart");
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+function medal(i){return i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1);}
+function maskName(n){ if(!HIDE) return n; if(/^S-/.test(n)) return n; if(n.length<=1) return n+"○"; return n.charAt(0)+"○".repeat(Math.min(n.length-1,2)); }
+function togglePriv(){ HIDE=!HIDE; var b=document.getElementById("privtoggle"); if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字"; load(); }
+
+function tabs(){
+  var h="";
+  ORDER.forEach(function(k){var c=COURSES[k];var u="?course="+k+(sess&&k===course?"&session="+encodeURIComponent(sess):"")+(HIDE?"&anon=1":"");h+='<a class="tab'+(k===course?" cur":"")+'" href="'+u+'">'+esc(c.label)+'</a>';});
+  document.getElementById("tabs").innerHTML=h;
+}
+
+function load(){
+  var cfg=COURSES[course];
+  if(!cfg){ board.innerHTML='<div class="empty">未知的課程代碼。</div>'; return; }
+  var games=cfg.games, si=cfg.tbl==="student_interactions";
+  sub.innerHTML='<b>'+esc(cfg.label)+'</b>'+(sess?'　·　場次 '+esc(sess):'　·　全部場次');
+  var url;
+  if(si){ url=SUPA+"/rest/v1/student_interactions?select=student_name,event_type,event_data"; if(sess)url+="&session_key=eq."+encodeURIComponent(sess); }
+  else { url=SUPA+"/rest/v1/interactions?course_code=eq."+encodeURIComponent(course)+"&select=student_id,student_name,game_id,score,total"; if(sess)url+="&session_id=eq."+encodeURIComponent(sess); }
+  fetch(url,{headers:{apikey:ANON,Authorization:"Bearer "+ANON}}).then(function(r){return r.json();}).then(function(rows){
+    if(!Array.isArray(rows)){throw new Error("bad");}
+    if(!rows.length){ board.innerHTML='<div class="empty">這堂課這個場次還沒有資料。</div>'; chartEl.innerHTML=""; live.textContent="● 已連線 · 0 人"; foot.textContent=""; return; }
+    var gset={}; games.forEach(function(g){gset[g[0]]=1;});
+    var stu={};
+    rows.forEach(function(x){
+      var id,name,gk,sc,tt;
+      if(si){ id=x.student_name||"?"; name=id; gk=x.event_type; sc=(x.event_data&&x.event_data.score)||0; tt=(x.event_data&&x.event_data.total)||0; }
+      else { id=x.student_id||"?"; name=x.student_name||id; gk=x.game_id; sc=x.score||0; tt=x.total||0; }
+      if(!stu[id])stu[id]={name:name,games:{},sc:0,tt:0};
+      if(name)stu[id].name=name;
+      if(gset[gk] && !stu[id].games[gk]){ stu[id].games[gk]=1; stu[id].sc+=sc; stu[id].tt+=tt; }
+    });
+    var N=games.length;
+    var arr=Object.keys(stu).map(function(id){var s=stu[id];var done=games.filter(function(g){return s.games[g[0]];}).length;var avg=s.tt?Math.round(s.sc/s.tt*100):0;return {name:s.name,games:s.games,done:done,avg:avg};});
+    arr.sort(function(a,b){ return (b.done-a.done) || (b.avg-a.avg) || a.name.localeCompare(b.name,"zh-Hant"); });
+    var ch='<div class="chart-title">全班完成度（共 '+arr.length+' 人）</div>';
+    games.forEach(function(g){var cnt=arr.filter(function(p){return p.games[g[0]];}).length;var pc=arr.length?Math.round(cnt/arr.length*100):0;ch+='<div class="cbar"><span class="cbar-l">'+esc(g[1])+'</span><span class="cbar-track"><span class="cbar-fill" style="width:'+pc+'%"></span></span><span class="cbar-v">'+cnt+'/'+arr.length+'（'+pc+'%）</span></div>';});
+    chartEl.innerHTML=ch;
+    var html="";
+    arr.slice(0,10).forEach(function(p,i){
+      var dots=games.map(function(g){return '<span class="dot'+(p.games[g[0]]?" on":"")+'">'+(p.games[g[0]]?"✓":"○")+g[1]+'</span>';}).join("");
+      var rc=i===0?"r1":i===1?"r2":i===2?"r3":"";
+      if(p.done===N)rc+=" alldone";
+      var nm=(p.done===N?"🌟 ":"")+esc(maskName(p.name))+(p.done===N?'<span class="allbadge">全部完成</span>':'');
+      html+='<div class="row '+rc+'"><div class="rank">'+medal(i)+'</div>'
+        +'<div><div class="name">'+nm+'</div><div class="dots">'+dots+'</div></div>'
+        +'<div class="donecount">'+p.done+'/'+N+'<span>完成</span></div>'
+        +'<div class="avg">'+p.avg+'%<span>平均</span></div></div>';
+    });
+    if(arr.length>10) html+='<div class="more">…還有 '+(arr.length-10)+' 位同學，繼續加油！</div>';
+    board.innerHTML=html;
+    var avgDone=(arr.reduce(function(a,b){return a+b.done;},0)/arr.length).toFixed(1);
+    live.innerHTML='● 即時 · <b>'+arr.length+'</b> 人報到';
+    foot.textContent="顯示前 10 名　·　全班平均完成 "+avgDone+" / "+N+"　·　每 8 秒自動更新　·　更新於 "+new Date().toLocaleTimeString("zh-TW");
+  }).catch(function(e){ live.textContent="● 連線異常"; });
+}
+(function(){var b=document.getElementById("privtoggle");if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字";})();
+tabs(); load(); setInterval(load,8000);
+</script>
+</body>
+</html>
