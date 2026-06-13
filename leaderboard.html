@@ -49,9 +49,23 @@ h1 .em{color:var(--accent)}
 .empty{text-align:center;color:var(--ink3);padding:70px 20px;font-size:clamp(1rem,1.8vw,1.4rem);line-height:1.8}
 .foot{margin-top:20px;text-align:center;color:var(--ink4);font-size:.82rem}
 .note{text-align:center;color:var(--accent2);font-weight:700;font-size:clamp(.95rem,1.5vw,1.2rem);margin:4px 0 18px}
+#lock{position:fixed;inset:0;z-index:999;background:radial-gradient(900px 600px at 50% 0%,#18204d,#0a0e27 60%),#0a0e27;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px;text-align:center}
+#lock h2{font-size:clamp(1.3rem,3vw,1.9rem);font-weight:900;color:var(--accent)}
+#lock p{color:var(--ink3);font-size:.92rem;max-width:340px;line-height:1.6}
+#lock input{width:min(300px,80vw);border:1.5px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);border-radius:10px;padding:13px;font-size:1.1rem;text-align:center;font-family:inherit}
+#lock input:focus{outline:none;border-color:var(--accent)}
+#lock button{width:min(300px,80vw);background:var(--accent);color:#06122b;border:none;border-radius:10px;padding:13px;font-size:1.05rem;font-weight:800;cursor:pointer;font-family:inherit}
+#pwerr{color:var(--accent2);font-size:.85rem;min-height:1.1em}
 </style>
 </head>
 <body>
+<div id="lock">
+  <h2>🔒 學習排行榜</h2>
+  <p>老師專用看板。請輸入通關碼進入,上課時投影給學生看完成度與排名。</p>
+  <input id="pw" type="password" placeholder="通關碼" onkeydown="if(event.key==='Enter')unlock()">
+  <button onclick="unlock()">進入看板</button>
+  <div id="pwerr"></div>
+</div>
 <header>
   <h1>🏆 今天的<span class="em">學習排行榜</span></h1>
   <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -114,8 +128,10 @@ function load(){
     foot.textContent="顯示前 10 名　·　全班平均完成 "+avgDone+" / 5　·　每 6 秒自動更新　·　更新於 "+new Date().toLocaleTimeString("zh-TW");
   }).catch(function(e){ live.textContent="● 連線異常"; });
 }
-(function(){var b=document.getElementById("privtoggle");if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字";})();
-load(); setInterval(load,6000);
+var PASS="meiho2026", started=false;
+function unlock(){ if(document.getElementById("pw").value===PASS){ try{sessionStorage.setItem("board_ok","1");}catch(e){} document.getElementById("lock").style.display="none"; begin(); } else { document.getElementById("pwerr").textContent="通關碼不對,再試一次。"; } }
+function begin(){ if(started)return; started=true; var b=document.getElementById("privtoggle");if(b)b.textContent=HIDE?"👁 顯示名字":"🙈 隱藏名字"; load(); setInterval(load,6000); }
+try{ if(sessionStorage.getItem("board_ok")==="1"){ document.getElementById("lock").style.display="none"; begin(); } }catch(e){}
 </script>
 </body>
 </html>
